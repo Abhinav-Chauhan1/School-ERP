@@ -24,9 +24,9 @@ enum UserStatus {
 model Admin {
   id           String     @id
   username     String     @unique
-  passwordHash String
-  name         String
-  surname      String
+  passwordHash String     @default("CHANGE_ME_HASH") // Add default
+  name         String     @default("Admin") // Add default
+  surname      String     @default("User") // Add default
   email        String?    @unique
   phone        String?    @unique
   address      String?
@@ -40,7 +40,7 @@ model Admin {
 model Student {
   id           String        @id
   username     String        @unique
-  passwordHash String
+  passwordHash String        @default("CHANGE_ME_HASH") // Add default
   name         String
   surname      String
   email        String?       @unique
@@ -74,7 +74,7 @@ model Student {
 model Teacher {
   id              String            @id
   username        String            @unique
-  passwordHash    String
+  passwordHash    String            @default("CHANGE_ME_HASH") // Add default
   name            String
   surname         String
   email           String?           @unique
@@ -104,7 +104,7 @@ model Teacher {
 model Parent {
   id             String          @id
   username       String          @unique
-  passwordHash   String
+  passwordHash   String          @default("CHANGE_ME_HASH") // Add default
   name           String
   surname        String
   email          String?         @unique
@@ -154,9 +154,10 @@ model Grade {
   id    Int @id @default(autoincrement())
   level Int @unique
 
-  students    Student[]
-  classes     Class[]
-  curriculums Curriculum[]
+  students     Student[]
+  classes      Class[]
+  curriculums  Curriculum[]
+  feeStructures FeeStructure[]
 }
 
 model Section {
@@ -249,15 +250,15 @@ model Exam {
   title       String
   startTime   DateTime
   endTime     DateTime
-  totalMarks  Int      // Total marks for this specific exam
-  passingMarks Int     // Minimum marks needed to pass
-  hasGrading  Boolean  @default(false) // Whether to use letter grading
+  totalMarks  Int      @default(100) // Add default
+  passingMarks Int     @default(35) // Add default
+  hasGrading  Boolean  @default(false)
 
   lessonId   Int
   lesson     Lesson   @relation(fields: [lessonId], references: [id])
   results    Result[]
-  examTypeId Int
-  examType   ExamType @relation(fields: [examTypeId], references: [id])
+  examTypeId Int?     // Make this optional temporarily
+  examType   ExamType? @relation(fields: [examTypeId], references: [id])
   termId     Int?
   term       Term?    @relation(fields: [termId], references: [id])
 }
@@ -267,7 +268,7 @@ model Assignment {
   title     String
   startDate DateTime
   dueDate   DateTime
-  totalMarks Int     // Total marks for this assignment
+  totalMarks Int     @default(50) // Add default
 
   lessonId Int
   lesson   Lesson   @relation(fields: [lessonId], references: [id])
@@ -278,7 +279,7 @@ model Result {
   id                Int          @id @default(autoincrement())
   score             Int          // Theory marks
   practicalScore    Int?         // Practical marks (if applicable)
-  totalObtained     Int          // Combined total (score + practicalScore)
+  totalObtained     Int          @default(0) // Add default
   grade             String?      // Letter grade (A, B, C, etc.)
   isPassed          Boolean      @default(false) // Pass/fail status
   feedbackComments  String?
