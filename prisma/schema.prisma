@@ -7,92 +7,213 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+  READONLY
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
 model Admin {
-  id       String @id
-  username String @unique
+  id           String     @id
+  username     String     @unique
+  passwordHash String
+  name         String
+  surname      String
+  email        String?    @unique
+  phone        String?    @unique
+  address      String?
+  img          String?
+  role         UserRole   @default(ADMIN)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  documents    Document[]
 }
 
 model Student {
-  id          String       @id
-  username    String       @unique
-  name        String
-  surname     String
-  email       String?      @unique
-  phone       String?      @unique
-  address     String
-  img         String?
-  bloodType   String
-  sex         UserSex
-  createdAt   DateTime     @default(now())
-  parentId    String
-  parent      Parent       @relation(fields: [parentId], references: [id])
-  classId     Int
-  class       Class        @relation(fields: [classId], references: [id])
-  gradeId     Int
-  grade       Grade        @relation(fields: [gradeId], references: [id])
-  attendances Attendance[]
-  results     Result[]
-  birthday    DateTime
+  id           String        @id
+  username     String        @unique
+  passwordHash String
+  name         String
+  surname      String
+  email        String?       @unique
+  phone        String?       @unique
+  address      String
+  img          String?
+  bloodType    String
+  sex          UserSex
+  role         UserRole      @default(STUDENT)
+  status       UserStatus    @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+  parentId     String
+  parent       Parent        @relation(fields: [parentId], references: [id])
+  classId      Int
+  class        Class         @relation(fields: [classId], references: [id])
+  sectionId    Int?
+  section      Section?      @relation(fields: [sectionId], references: [id])
+  gradeId      Int
+  grade        Grade         @relation(fields: [gradeId], references: [id])
+  attendances  Attendance[]
+  results      Result[]
+  birthday     DateTime
+  fees         FeePayment[]
+  reportCards  ReportCard[]
+  documents    Document[]
+  messages     Message[]     @relation("StudentMessages")
+  receivedMsgs Message[]     @relation("StudentReceivedMessages")
+  scholarships Scholarship[]
 }
 
 model Teacher {
-  id        String    @id
-  username  String    @unique
-  name      String
-  surname   String
-  email     String?   @unique
-  phone     String?   @unique
-  address   String
-  img       String?
-  bloodType String
-  sex       UserSex
-  createdAt DateTime  @default(now())
-  subjects  Subject[]
-  lessons   Lesson[]
-  classes   Class[]
-  birthday  DateTime
+  id              String            @id
+  username        String            @unique
+  passwordHash    String
+  name            String
+  surname         String
+  email           String?           @unique
+  phone           String?           @unique
+  address         String
+  img             String?
+  bloodType       String
+  sex             UserSex
+  role            UserRole          @default(TEACHER)
+  status          UserStatus        @default(ACTIVE)
+  createdAt       DateTime          @default(now())
+  subjects        Subject[]
+  lessons         Lesson[]
+  classes         Class[]
+  birthday        DateTime
+  departmentId    Int?
+  department      Department?       @relation(fields: [departmentId], references: [id])
+  documents       Document[]
+  messages        Message[]         @relation("TeacherMessages")
+  receivedMsgs    Message[]         @relation("TeacherReceivedMessages")
+  payrolls        Payroll[]
+  parentMeetings  ParentMeeting[]
+  academicYearId  Int?
+  academicYear    AcademicYear?     @relation(fields: [academicYearId], references: [id])
 }
 
 model Parent {
-  id        String    @id
-  username  String    @unique
-  name      String
-  surname   String
-  email     String?   @unique
-  phone     String    @unique
-  address   String
-  createdAt DateTime  @default(now())
-  students  Student[]
+  id             String          @id
+  username       String          @unique
+  passwordHash   String
+  name           String
+  surname        String
+  email          String?         @unique
+  phone          String          @unique
+  address        String
+  role           UserRole        @default(PARENT)
+  status         UserStatus      @default(ACTIVE)
+  createdAt      DateTime        @default(now())
+  students       Student[]
+  messages       Message[]       @relation("ParentMessages")
+  receivedMsgs   Message[]       @relation("ParentReceivedMessages")
+  parentMeetings ParentMeeting[]
+  documents      Document[]
+}
+
+model AcademicYear {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  startDate   DateTime
+  endDate     DateTime
+  isCurrent   Boolean   @default(false)
+  terms       Term[]
+  classes     Class[]
+  teachers    Teacher[]
+  curriculums Curriculum[]
+}
+
+model Term {
+  id             Int          @id @default(autoincrement())
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  academicYearId Int
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  exams          Exam[]
+  reportCards    ReportCard[]
+}
+
+model Department {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  subjects Subject[]
+  teachers Teacher[]
 }
 
 model Grade {
   id    Int @id @default(autoincrement())
   level Int @unique
 
+  students    Student[]
+  classes     Class[]
+  curriculums Curriculum[]
+}
+
+model Section {
+  id       Int       @id @default(autoincrement())
+  name     String
+  classId  Int
+  class    Class     @relation(fields: [classId], references: [id])
   students Student[]
-  classess Class[]
 }
 
 model Class {
-  id       Int    @id @default(autoincrement())
-  name     String @unique
-  capacity Int
-
-  supervisorId  String?
-  supervisor    Teacher?       @relation(fields: [supervisorId], references: [id])
-  lessons       Lesson[]
-  students      Student[]
-  gradeId       Int
-  grade         Grade          @relation(fields: [gradeId], references: [id])
-  events        Event[]
-  announcements Announcement[]
+  id             Int            @id @default(autoincrement())
+  name           String         @unique
+  capacity       Int
+  supervisorId   String?
+  supervisor     Teacher?       @relation(fields: [supervisorId], references: [id])
+  lessons        Lesson[]
+  students       Student[]
+  gradeId        Int
+  grade          Grade          @relation(fields: [gradeId], references: [id])
+  events         Event[]
+  announcements  Announcement[]
+  sections       Section[]
+  academicYearId Int?
+  academicYear   AcademicYear?  @relation(fields: [academicYearId], references: [id])
+  rooms          Room[]
 }
 
 model Subject {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  teachers Teacher[]
-  lessons  Lesson[]
+  id           Int         @id @default(autoincrement())
+  name         String      @unique
+  teachers     Teacher[]
+  lessons      Lesson[]
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  syllabi      Syllabus[]
+  curriculums  Curriculum[]
+}
+
+model Curriculum {
+  id             Int          @id @default(autoincrement())
+  name           String
+  description    String?
+  gradeId        Int
+  grade          Grade        @relation(fields: [gradeId], references: [id])
+  academicYearId Int
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  subjects       Subject[]
+}
+
+model Syllabus {
+  id          Int     @id @default(autoincrement())
+  content     String
+  subjectId   Int
+  subject     Subject @relation(fields: [subjectId], references: [id])
+  description String?
+  completion  Int     @default(0) // Track completion percentage
 }
 
 model Lesson {
@@ -111,17 +232,34 @@ model Lesson {
   exams       Exam[]
   assignments Assignment[]
   attendances Attendance[]
+  roomId      Int?
+  room        Room?        @relation(fields: [roomId], references: [id])
+}
+
+model ExamType {
+  id           Int     @id @default(autoincrement())
+  name         String  @unique
+  total        Int
+  hasPractical Boolean @default(false)
+  exams        Exam[]
 }
 
 model Exam {
-  id        Int      @id @default(autoincrement())
-  title     String
-  startTime DateTime
-  endTime   DateTime
+  id          Int      @id @default(autoincrement())
+  title       String
+  startTime   DateTime
+  endTime     DateTime
+  totalMarks  Int      // Total marks for this specific exam
+  passingMarks Int     // Minimum marks needed to pass
+  hasGrading  Boolean  @default(false) // Whether to use letter grading
 
-  lessonId Int
-  lesson   Lesson   @relation(fields: [lessonId], references: [id])
-  results  Result[]
+  lessonId   Int
+  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+  results    Result[]
+  examTypeId Int
+  examType   ExamType @relation(fields: [examTypeId], references: [id])
+  termId     Int?
+  term       Term?    @relation(fields: [termId], references: [id])
 }
 
 model Assignment {
@@ -129,6 +267,7 @@ model Assignment {
   title     String
   startDate DateTime
   dueDate   DateTime
+  totalMarks Int     // Total marks for this assignment
 
   lessonId Int
   lesson   Lesson   @relation(fields: [lessonId], references: [id])
@@ -136,15 +275,35 @@ model Assignment {
 }
 
 model Result {
-  id    Int @id @default(autoincrement())
-  score Int
+  id                Int          @id @default(autoincrement())
+  score             Int          // Theory marks
+  practicalScore    Int?         // Practical marks (if applicable)
+  totalObtained     Int          // Combined total (score + practicalScore)
+  grade             String?      // Letter grade (A, B, C, etc.)
+  isPassed          Boolean      @default(false) // Pass/fail status
+  feedbackComments  String?
+  examId            Int?
+  exam              Exam?        @relation(fields: [examId], references: [id])
+  assignmentId      Int?
+  assignment        Assignment?  @relation(fields: [assignmentId], references: [id])
+  studentId         String
+  student           Student      @relation(fields: [studentId], references: [id])
+  reportCardId      Int?
+  reportCard        ReportCard?  @relation(fields: [reportCardId], references: [id])
+}
 
-  examId       Int?
-  exam         Exam?       @relation(fields: [examId], references: [id])
-  assignmentId Int?
-  assignment   Assignment? @relation(fields: [assignmentId], references: [id])
-  studentId    String
-  student      Student     @relation(fields: [studentId], references: [id])
+model ReportCard {
+  id          Int       @id @default(autoincrement())
+  totalMarks  Int
+  percentage  Float
+  grade       String
+  remarks     String?
+  issueDate   DateTime
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id])
+  results     Result[]
+  termId      Int
+  term        Term      @relation(fields: [termId], references: [id])
 }
 
 model Attendance {
@@ -167,6 +326,8 @@ model Event {
 
   classId Int?
   class   Class? @relation(fields: [classId], references: [id])
+  roomId  Int?
+  room    Room?  @relation(fields: [roomId], references: [id])
 }
 
 model Announcement {
@@ -177,6 +338,159 @@ model Announcement {
 
   classId Int?
   class   Class? @relation(fields: [classId], references: [id])
+}
+
+model FeeStructure {
+  id           Int          @id @default(autoincrement())
+  name         String
+  amount       Float
+  description  String?
+  dueDate      DateTime?
+  feeType      String // Tuition, Transportation, Lab, etc.
+  academicYear String?
+  gradeId      Int?
+  grade        Grade?       @relation(fields: [gradeId], references: [id])
+  payments     FeePayment[]
+}
+
+model FeePayment {
+  id             Int           @id @default(autoincrement())
+  amount         Float
+  paymentDate    DateTime      @default(now())
+  paymentMethod  String // Cash, Card, Bank Transfer
+  transactionId  String?
+  status         String // Paid, Pending, Failed
+  studentId      String
+  student        Student       @relation(fields: [studentId], references: [id])
+  feeStructureId Int
+  feeStructure   FeeStructure  @relation(fields: [feeStructureId], references: [id])
+  receiptNumber  String?
+}
+
+model Scholarship {
+  id          Int      @id @default(autoincrement())
+  name        String
+  amount      Float
+  percentage  Float?
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id])
+}
+
+model Payroll {
+  id         Int      @id @default(autoincrement())
+  amount     Float
+  payDate    DateTime
+  teacherId  String
+  teacher    Teacher  @relation(fields: [teacherId], references: [id])
+  month      Int
+  year       Int
+  taxAmount  Float?
+  netSalary  Float
+  bonusAmount Float?
+}
+
+model Room {
+  id        Int      @id @default(autoincrement())
+  name      String
+  capacity  Int
+  type      String // Classroom, Lab, Library, etc.
+  location  String?
+  available Boolean  @default(true)
+  lessons   Lesson[]
+  classes   Class[]
+  events    Event[]
+}
+
+model Message {
+  id           Int      @id @default(autoincrement())
+  subject      String
+  content      String
+  sendDate     DateTime @default(now())
+  isRead       Boolean  @default(false)
+  
+  // Sender relationships
+  studentSenderId String?
+  studentSender   Student? @relation("StudentMessages", fields: [studentSenderId], references: [id])
+  teacherSenderId String?
+  teacherSender   Teacher? @relation("TeacherMessages", fields: [teacherSenderId], references: [id])
+  parentSenderId  String?
+  parentSender    Parent?  @relation("ParentMessages", fields: [parentSenderId], references: [id])
+  
+  // Receiver relationships
+  studentReceiverId String?
+  studentReceiver   Student? @relation("StudentReceivedMessages", fields: [studentReceiverId], references: [id])
+  teacherReceiverId String?
+  teacherReceiver   Teacher? @relation("TeacherReceivedMessages", fields: [teacherReceiverId], references: [id])
+  parentReceiverId  String?
+  parentReceiver    Parent?  @relation("ParentReceivedMessages", fields: [parentReceiverId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  title     String
+  message   String
+  date      DateTime @default(now())
+  isRead    Boolean  @default(false)
+  type      String // Info, Warning, Alert
+  userId    String
+  userType  String // Admin, Teacher, Student, Parent
+}
+
+model ParentMeeting {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  meetingDate DateTime
+  status      String // Scheduled, Completed, Cancelled
+  parentId    String
+  parent      Parent   @relation(fields: [parentId], references: [id])
+  teacherId   String
+  teacher     Teacher  @relation(fields: [teacherId], references: [id])
+  feedback    String?
+}
+
+model Document {
+  id          Int      @id @default(autoincrement())
+  title       String
+  fileUrl     String
+  uploadDate  DateTime @default(now())
+  type        String // ID Proof, Certificate, Assignment, etc.
+  description String?
+  
+  // Relations to owners
+  studentId   String?
+  student     Student? @relation(fields: [studentId], references: [id])
+  teacherId   String?
+  teacher     Teacher? @relation(fields: [teacherId], references: [id])
+  parentId    String?
+  parent      Parent?  @relation(fields: [parentId], references: [id])
+  adminId     String?
+  admin       Admin?   @relation(fields: [adminId], references: [id])
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  title       String
+  amount      Float
+  date        DateTime
+  category    String
+  description String?
+  receipt     String?
+  approvedBy  String?
+}
+
+model Budget {
+  id           Int      @id @default(autoincrement())
+  title        String
+  totalAmount  Float
+  allocatedDate DateTime
+  endDate      DateTime?
+  description  String?
+  category     String
+  utilizedAmount Float @default(0)
 }
 
 enum UserSex {
