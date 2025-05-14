@@ -5,35 +5,45 @@ import Image from "next/image";
 const Navbar = async () => {
   const user = await currentUser();
   return (
-    <div className="flex items-center justify-between p-4">
+    <div className="flex items-center justify-between p-4 bg-white border-b border-gray-100 shadow-sm">
       {/* SEARCH BAR */}
-      <div className="hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2">
-        <Image src="/search.png" alt="" width={14} height={14} />
+      <div className="hidden md:flex items-center gap-3 text-sm bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 transition-all duration-200 focus-within:border-blue-200 focus-within:shadow-sm">
+        <Image src="/search.png" alt="" width={16} height={16} className="opacity-60" />
         <input
           type="text"
           placeholder="Search..."
-          className="w-[200px] p-2 bg-transparent outline-none"
+          className="w-[240px] bg-transparent outline-none text-gray-600"
         />
       </div>
+      
       {/* ICONS AND USER */}
-      <div className="flex items-center gap-6 justify-end w-full">
-        <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer">
-          <Image src="/message.png" alt="" width={20} height={20} />
-        </div>
-        <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative">
-          <Image src="/announcement.png" alt="" width={20} height={20} />
-          <div className="absolute -top-3 -right-3 w-5 h-5 flex items-center justify-center bg-purple-500 text-white rounded-full text-xs">
+      <div className="flex items-center gap-5 justify-end w-full">
+        <button className="relative p-2.5 text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+          <Image src="/message.png" alt="Messages" width={20} height={20} />
+        </button>
+        
+        <button className="relative p-2.5 text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+          <Image src="/announcement.png" alt="Notifications" width={20} height={20} />
+          <span className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-indigo-600 text-white rounded-full text-xs font-medium shadow-sm">
             1
+          </span>
+        </button>
+        
+        <div className="hidden sm:flex items-center gap-3 border-l border-gray-100 pl-4">
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-700">{user?.firstName || 'User'}</span>
+            <span className="text-xs text-gray-500 capitalize">
+              {user?.publicMetadata?.role as string || 'Guest'}
+            </span>
+          </div>
+          <div className="ring-2 ring-gray-100 rounded-full p-0.5">
+            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
-        <div className="flex flex-col">
-          <span className="text-xs leading-3 font-medium">John Doe</span>
-          <span className="text-[10px] text-gray-500 text-right">
-            {user?.publicMetadata?.role as string}
-          </span>
+        
+        <div className="sm:hidden">
+          <UserButton afterSignOutUrl="/" />
         </div>
-        {/* <Image src="/avatar.png" alt="" width={36} height={36} className="rounded-full"/> */}
-        <UserButton />
       </div>
     </div>
   );

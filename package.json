@@ -17,6 +17,7 @@
     "bcryptjs": "^3.0.2",
     "cuid": "^3.0.0",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.11.3",
     "moment": "^2.30.1",
     "next": "14.2.5",
     "next-cloudinary": "^6.13.0",
