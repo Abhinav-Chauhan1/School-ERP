@@ -128,13 +128,14 @@ const menuItems: MenuSection[] = [
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/calender.png",
+        icon: "/calendar.png",
         label: "Fees",
         href: "/list/fees",
         visible: ["admin", "teacher", "student", "parent"],
         subItems: [
           { label: "Fee Structure", href: "/list/fee-structure" },
           { label: "Fee Payments", href: "/list/fee-payments" },
+          { label: "Payroll", href: "/list/payroll" },
         ],
       },
       {

@@ -23,7 +23,8 @@ import {
   deleteEvent,
   deleteAnnouncement,
   deleteFeeStructure,
-  deleteFeePayment, // Add import for deleteFeePayment action
+  deleteFeePayment,
+  deletePayroll, // Add import for deletePayroll action
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -56,7 +57,8 @@ const deleteActionMap = {
   event: deleteEvent,
   announcement: deleteAnnouncement,
   feeStructure: deleteFeeStructure,
-  feePayment: deleteFeePayment, // Update to use proper deleteFeePayment action
+  feePayment: deleteFeePayment,
+  payroll: deletePayroll, // Update to use proper deletePayroll action
 };
 
 // USE LAZY LOADING
@@ -128,6 +130,9 @@ const FeeStructureForm = dynamic(() => import("@/app/(dashboard)/list/fee-struct
   loading: () => <h1>Loading...</h1>,
 });
 const FeePaymentForm = dynamic(() => import("@/app/(dashboard)/list/fee-payment/FeePaymentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const PayrollForm = dynamic(() => import("@/app/(dashboard)/list/payroll/PayRollForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 // TODO: OTHER FORMS
@@ -318,6 +323,14 @@ const forms: {
   ),
   feePayment: (setOpen, type, data, relatedData) => (
     <FeePaymentForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  payroll: (setOpen, type, data, relatedData) => (
+    <PayrollForm
       type={type}
       data={data}
       setOpen={setOpen}

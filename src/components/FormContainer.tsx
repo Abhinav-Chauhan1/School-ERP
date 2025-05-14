@@ -26,7 +26,8 @@ export type FormContainerProps = {
     | "examType"
     | "reportCard"
     | "feeStructure"
-    | "feePayment"; // Add feePayment to the allowed table types
+    | "feePayment"
+    | "payroll"; // Add payroll to the allowed table types
   type: "create" | "update" | "delete";
   data?: any;
   id?: number | string;
@@ -566,6 +567,27 @@ const FormContainer = async ({ table, type, data, id, relatedData: passedRelated
         relatedData = { 
           students: feePaymentStudents,
           feeStructures: feePaymentFeeStructures
+        };
+        break;
+      case "payroll":
+        // Fetch data needed for the payroll form
+        const payrollTeachers = await prisma.teacher.findMany({
+          select: { 
+            id: true, 
+            name: true, 
+            surname: true 
+          },
+          where: {
+            status: "ACTIVE"
+          },
+          orderBy: [
+            { surname: 'asc' },
+            { name: 'asc' }
+          ],
+        });
+        
+        relatedData = { 
+          teachers: payrollTeachers
         };
         break;
       default:
