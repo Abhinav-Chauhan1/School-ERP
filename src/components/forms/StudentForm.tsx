@@ -8,15 +8,11 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   studentSchema,
   StudentSchema,
-  teacherSchema,
-  TeacherSchema,
-} from "@/lib/formValidationSchemas";
+} from "@/app/(dashboard)/list/students/studentSchema";
 import { useFormState } from "react-dom";
 import {
   createStudent,
-  createTeacher,
   updateStudent,
-  updateTeacher,
 } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
