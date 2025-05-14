@@ -4,16 +4,11 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Prisma, Subject, Teacher, Department } from "@prisma/client";
+import { Prisma, Department } from "@prisma/client";
 import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
 
-type SubjectList = Subject & { 
-  teachers: Teacher[]; 
-  department?: Department | null;
-};
-
-const SubjectListPage = async ({
+const DepartmentListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -23,17 +18,17 @@ const SubjectListPage = async ({
 
   const columns = [
     {
-      header: "Subject Name",
+      header: "Name",
       accessor: "name",
     },
     {
-      header: "Department",
-      accessor: "department",
+      header: "Teachers",
+      accessor: "teacherCount",
       className: "hidden md:table-cell",
     },
     {
-      header: "Teachers",
-      accessor: "teachers",
+      header: "Subjects",
+      accessor: "subjectCount",
       className: "hidden md:table-cell",
     },
     {
@@ -42,24 +37,20 @@ const SubjectListPage = async ({
     },
   ];
 
-  const renderRow = (item: SubjectList) => (
+  const renderRow = (item: any) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
-      <td className="flex items-center gap-4 p-4">{item.name}</td>
-      <td className="hidden md:table-cell">
-        {item.department?.name || "Not assigned"}
-      </td>
-      <td className="hidden md:table-cell">
-        {item.teachers.map((teacher) => teacher.name).join(", ")}
-      </td>
+      <td className="p-4">{item.name}</td>
+      <td className="hidden md:table-cell p-4">{item.teacherCount}</td>
+      <td className="hidden md:table-cell p-4">{item.subjectCount}</td>
       <td>
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormContainer table="subject" type="update" data={item} />
-              <FormContainer table="subject" type="delete" id={item.id} />
+              <FormContainer table="department" type="update" data={item} />
+              <FormContainer table="department" type="delete" id={item.id} />
             </>
           )}
         </div>
@@ -71,9 +62,7 @@ const SubjectListPage = async ({
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
-  const query: Prisma.SubjectWhereInput = {};
+  const query: Prisma.DepartmentWhereInput = {};
 
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
@@ -89,24 +78,37 @@ const SubjectListPage = async ({
     }
   }
 
-  const [data, count] = await prisma.$transaction([
-    prisma.subject.findMany({
+  const [departmentsData, count] = await prisma.$transaction([
+    prisma.department.findMany({
       where: query,
-      include: {
-        teachers: true,
-        department: true,
-      },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
+      orderBy: { name: 'asc' },
+      include: {
+        _count: {
+          select: {
+            teachers: true,
+            subjects: true,
+          },
+        },
+      },
     }),
-    prisma.subject.count({ where: query }),
+    prisma.department.count({ where: query }),
   ]);
+
+  // Transform the data to include teacher and subject counts
+  const data = departmentsData.map(dept => ({
+    id: dept.id,
+    name: dept.name,
+    teacherCount: dept._count.teachers,
+    subjectCount: dept._count.subjects,
+  }));
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Subjects</h1>
+        <h1 className="hidden md:block text-lg font-semibold">Departments</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
@@ -117,7 +119,7 @@ const SubjectListPage = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormContainer table="subject" type="create" />
+              <FormContainer table="department" type="create" />
             )}
           </div>
         </div>
@@ -130,4 +132,4 @@ const SubjectListPage = async ({
   );
 };
 
-export default SubjectListPage;
+export default DepartmentListPage;

@@ -9,6 +9,15 @@ import {
   deleteAcademicYear,
   deleteTerm,
   deleteParent,
+  deleteDepartment,
+  deleteGrade,
+  deleteSection,
+  deleteCurriculum,
+  deleteSyllabus,
+  deleteLesson,
+  deleteExamType,
+  deleteAssignment,
+  deleteResult, // Add import for deleteResult action
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -27,19 +36,21 @@ const deleteActionMap = {
   academicYear: deleteAcademicYear,
   term: deleteTerm,
   parent: deleteParent,
-  // TODO: OTHER DELETE ACTIONS
-  lesson: deleteSubject,
-  assignment: deleteSubject,
-  result: deleteSubject,
+  department: deleteDepartment,
+  grade: deleteGrade,
+  section: deleteSection,
+  curriculum: deleteCurriculum,
+  syllabus: deleteSyllabus,
+  lesson: deleteLesson,
+  examType: deleteExamType,
+  assignment: deleteAssignment,
+  result: deleteResult, // Update to use proper deleteResult action
   attendance: deleteSubject,
   event: deleteSubject,
   announcement: deleteSubject,
 };
 
 // USE LAZY LOADING
-
-// import TeacherForm from "./forms/TeacherForm";
-// import StudentForm from "./forms/StudentForm";
 
 const TeacherForm = dynamic(() => import("@/app/(dashboard)/teacher/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
@@ -50,19 +61,46 @@ const StudentForm = dynamic(() => import("@/app/(dashboard)/student/StudentForm"
 const ParentForm = dynamic(() => import("@/app/(dashboard)/parent/ParentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
-const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
+const SubjectForm = dynamic(() => import("@/app/(dashboard)/list/subjects/SubjectForm"), {
   loading: () => <h1>Loading...</h1>,
 });
-const ClassForm = dynamic(() => import("./forms/ClassForm"), {
+const ClassForm = dynamic(() => import("../app/(dashboard)/list/classes/ClassForm"), {
   loading: () => <h1>Loading...</h1>,
 });
-const ExamForm = dynamic(() => import("./forms/ExamForm"), {
+const ExamForm = dynamic(() => import("@/app/(dashboard)/list/exams/ExamForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const AcademicYearForm = dynamic(() => import("./forms/AcademicYearForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const TermForm = dynamic(() => import("./forms/TermForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const DepartmentForm = dynamic(() => import("@/app/(dashboard)/list/department/DeparmentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const GradeForm = dynamic(() => import("@/app/(dashboard)/list/grade/GradeForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const SectionForm = dynamic(() => import("@/app/(dashboard)/list/sections/SectionForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const CurriculumForm = dynamic(() => import("@/app/(dashboard)/list/curriculum/CurriculumForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const SyllabusForm = dynamic(() => import("@/app/(dashboard)/list/syllabus/SyllabusForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const LessonForm = dynamic(() => import("@/app/(dashboard)/list/lessons/LessonForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const ExamTypeForm = dynamic(() => import("@/app/(dashboard)/list/exam-type/ExamTypeForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const AssignmentForm = dynamic(() => import("@/app/(dashboard)/list/assignments/AssignmentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const ResultForm = dynamic(() => import("@/app/(dashboard)/list/results/ResultForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 // TODO: OTHER FORMS
@@ -88,7 +126,11 @@ const forms: {
       type={type}
       data={data}
       setOpen={setOpen}
-      relatedData={relatedData}
+      relatedData={{
+        teachers: relatedData?.teachers || [],
+        grades: relatedData?.grades || [],
+        academicYears: relatedData?.academicYears || []
+      }}
     />
   ),
   teacher: (setOpen, type, data, relatedData) => (
@@ -132,6 +174,75 @@ const forms: {
   ),
   term: (setOpen, type, data, relatedData) => (
     <TermForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  department: (setOpen, type, data) => (
+    <DepartmentForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+    />
+  ),
+  grade: (setOpen, type, data) => (
+    <GradeForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+    />
+  ),
+  section: (setOpen, type, data, relatedData) => (
+    <SectionForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      classes={relatedData?.classes || []}
+    />
+  ),
+  curriculum: (setOpen, type, data, relatedData) => (
+    <CurriculumForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  syllabus: (setOpen, type, data, relatedData) => (
+    <SyllabusForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  lesson: (setOpen, type, data, relatedData) => (
+    <LessonForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  examType: (setOpen, type, data) => (
+    <ExamTypeForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+    />
+  ),
+  assignment: (setOpen, type, data, relatedData) => (
+    <AssignmentForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  result: (setOpen, type, data, relatedData) => (
+    <ResultForm
       type={type}
       data={data}
       setOpen={setOpen}

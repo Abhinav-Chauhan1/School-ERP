@@ -1,39 +1,87 @@
-import { FieldError } from "react-hook-form";
+"use client";
+
+import { FieldError, UseFormRegister } from "react-hook-form";
+import { ReactNode } from "react";
 
 type InputFieldProps = {
   label: string;
-  type?: string;
-  register: any;
   name: string;
-  defaultValue?: string;
+  defaultValue?: any;
+  register: UseFormRegister<any>;
   error?: FieldError;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
   hidden?: boolean;
-  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  textarea?: boolean; // Added textarea prop
+  rows?: number; 
+  className?: string;
+  children?: ReactNode;
 };
 
 const InputField = ({
   label,
-  type = "text",
-  register,
   name,
   defaultValue,
+  register,
   error,
-  hidden,
-  inputProps,
+  type = "text",
+  placeholder = "",
+  required = false,
+  disabled = false,
+  hidden = false,
+  textarea = false, // Default to false
+  rows = 4,
+  className = "",
+  children,
 }: InputFieldProps) => {
-  return (
-    <div className={hidden ? "hidden" : "flex flex-col gap-2 w-full md:w-1/4"}>
-      <label className="text-xs text-gray-500">{label}</label>
+  if (hidden) {
+    return (
       <input
-        type={type}
+        type="hidden"
+        id={name}
+        defaultValue={defaultValue || ""}
         {...register(name)}
-        className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-        {...inputProps}
-        defaultValue={defaultValue}
       />
-      {error?.message && (
-        <p className="text-xs text-red-400">{error.message.toString()}</p>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col gap-2 ${className}`}>
+      <label htmlFor={name} className="text-sm font-medium">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      
+      {textarea ? (
+        <textarea
+          id={name}
+          rows={rows}
+          defaultValue={defaultValue || ""}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={`p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-lamaSky ${
+            error ? "border-red-500 focus:ring-red-500" : "border-gray-300"
+          } ${disabled ? "bg-gray-100 text-gray-500" : ""}`}
+          {...register(name)}
+        ></textarea>
+      ) : (
+        <input
+          type={type}
+          id={name}
+          defaultValue={defaultValue || ""}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={`p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-lamaSky ${
+            error ? "border-red-500 focus:ring-red-500" : "border-gray-300"
+          } ${disabled ? "bg-gray-100 text-gray-500" : ""}`}
+          {...register(name)}
+        />
       )}
+      
+      {children}
+      
+      {error && <span className="text-red-500 text-sm">{error.message}</span>}
     </div>
   );
 };

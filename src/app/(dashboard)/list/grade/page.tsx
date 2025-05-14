@@ -4,16 +4,11 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Prisma, Subject, Teacher, Department } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
 
-type SubjectList = Subject & { 
-  teachers: Teacher[]; 
-  department?: Department | null;
-};
-
-const SubjectListPage = async ({
+const GradeListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -23,18 +18,23 @@ const SubjectListPage = async ({
 
   const columns = [
     {
-      header: "Subject Name",
-      accessor: "name",
+      header: "Grade Level",
+      accessor: "level",
     },
     {
-      header: "Department",
-      accessor: "department",
+      header: "Students",
+      accessor: "studentCount",
       className: "hidden md:table-cell",
     },
     {
-      header: "Teachers",
-      accessor: "teachers",
+      header: "Classes",
+      accessor: "classCount",
       className: "hidden md:table-cell",
+    },
+    {
+      header: "Fee Structures",
+      accessor: "feeStructureCount",
+      className: "hidden lg:table-cell",
     },
     {
       header: "Actions",
@@ -42,24 +42,21 @@ const SubjectListPage = async ({
     },
   ];
 
-  const renderRow = (item: SubjectList) => (
+  const renderRow = (item: any) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
-      <td className="flex items-center gap-4 p-4">{item.name}</td>
-      <td className="hidden md:table-cell">
-        {item.department?.name || "Not assigned"}
-      </td>
-      <td className="hidden md:table-cell">
-        {item.teachers.map((teacher) => teacher.name).join(", ")}
-      </td>
+      <td className="p-4">{item.level}</td>
+      <td className="hidden md:table-cell p-4">{item.studentCount}</td>
+      <td className="hidden md:table-cell p-4">{item.classCount}</td>
+      <td className="hidden lg:table-cell p-4">{item.feeStructureCount}</td>
       <td>
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormContainer table="subject" type="update" data={item} />
-              <FormContainer table="subject" type="delete" id={item.id} />
+              <FormContainer table="grade" type="update" data={item} />
+              <FormContainer table="grade" type="delete" id={item.id} />
             </>
           )}
         </div>
@@ -71,16 +68,14 @@ const SubjectListPage = async ({
 
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
-  const query: Prisma.SubjectWhereInput = {};
+  const query: Prisma.GradeWhereInput = {};
 
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
           case "search":
-            query.name = { contains: value, mode: "insensitive" };
+            query.level = { equals: parseInt(value) || undefined };
             break;
           default:
             break;
@@ -89,24 +84,41 @@ const SubjectListPage = async ({
     }
   }
 
-  const [data, count] = await prisma.$transaction([
-    prisma.subject.findMany({
+  const [gradesData, count] = await prisma.$transaction([
+    prisma.grade.findMany({
       where: query,
-      include: {
-        teachers: true,
-        department: true,
-      },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
+      orderBy: { level: 'asc' },
+      include: {
+        _count: {
+          select: {
+            students: true,
+            classes: true,
+            feeStructures: true,
+            curriculums: true,
+          },
+        },
+      },
     }),
-    prisma.subject.count({ where: query }),
+    prisma.grade.count({ where: query }),
   ]);
+
+  // Transform the data to include related counts
+  const data = gradesData.map(grade => ({
+    id: grade.id,
+    level: grade.level,
+    studentCount: grade._count.students,
+    classCount: grade._count.classes,
+    feeStructureCount: grade._count.feeStructures,
+    curriculumCount: grade._count.curriculums,
+  }));
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Subjects</h1>
+        <h1 className="hidden md:block text-lg font-semibold">Grades</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
@@ -117,7 +129,7 @@ const SubjectListPage = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormContainer table="subject" type="create" />
+              <FormContainer table="grade" type="create" />
             )}
           </div>
         </div>
@@ -130,4 +142,4 @@ const SubjectListPage = async ({
   );
 };
 
-export default SubjectListPage;
+export default GradeListPage;

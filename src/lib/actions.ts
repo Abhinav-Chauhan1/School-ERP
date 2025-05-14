@@ -116,78 +116,79 @@ export const deleteSubject = async (
 };
 
 // CLASS ACTIONS
-export const createClass = async (
-  currentState: CurrentState,
-  data: ClassSchema
-) => {
+export async function createClass(prevState: any, formData: any) {
   try {
+    const classData = {
+      name: formData.name,
+      capacity: parseInt(formData.capacity),
+      supervisorId: formData.supervisorId || undefined,
+      gradeId: parseInt(formData.gradeId),
+      academicYearId: formData.academicYearId ? parseInt(formData.academicYearId) : undefined,
+    };
+
     await prisma.class.create({
-      data: {
-        name: data.name,
-        capacity: data.capacity,
-        grade: { connect: { id: data.gradeId } },
-        ...(data.supervisorId && { supervisor: { connect: { id: data.supervisorId } } }),
-        ...(data.academicYearId && { academicYear: { connect: { id: data.academicYearId } } }),
-      },
+      data: classData,
     });
 
-    revalidatePath("/list/classes");
-    return { success: true, error: false };
-  } catch (err) {
-    console.log(err);
-    return { success: false, error: true };
+    return {
+      success: true,
+      error: false,
+    };
+  } catch (error) {
+    console.error("Error creating class:", error);
+    return {
+      success: false,
+      error: true,
+    };
   }
-};
+}
 
-export const updateClass = async (
-  currentState: CurrentState,
-  data: ClassSchema
-) => {
+export async function updateClass(prevState: any, formData: any) {
   try {
+    const classData = {
+      name: formData.name,
+      capacity: parseInt(formData.capacity),
+      supervisorId: formData.supervisorId || undefined,
+      gradeId: parseInt(formData.gradeId),
+      academicYearId: formData.academicYearId ? parseInt(formData.academicYearId) : undefined,
+    };
+
     await prisma.class.update({
-      where: {
-        id: data.id,
-      },
-      data: {
-        name: data.name,
-        capacity: data.capacity,
-        grade: { connect: { id: data.gradeId } },
-        ...(data.supervisorId ? 
-          { supervisor: { connect: { id: data.supervisorId } } } : 
-          { supervisor: { disconnect: true } }),
-        ...(data.academicYearId ? 
-          { academicYear: { connect: { id: data.academicYearId } } } : 
-          { academicYear: { disconnect: true } }),
-      },
+      where: { id: parseInt(formData.id) },
+      data: classData,
     });
 
-    revalidatePath("/list/classes");
-    return { success: true, error: false };
-  } catch (err) {
-    console.log(err);
-    return { success: false, error: true };
+    return {
+      success: true,
+      error: false,
+    };
+  } catch (error) {
+    console.error("Error updating class:", error);
+    return {
+      success: false,
+      error: true,
+    };
   }
-};
+}
 
-export const deleteClass = async (
-  currentState: CurrentState,
-  data: FormData
-) => {
-  const id = data.get("id") as string;
+export async function deleteClass(prevState: any, formData: any) {
   try {
     await prisma.class.delete({
-      where: {
-        id: parseInt(id),
-      },
+      where: { id: parseInt(formData.id) },
     });
 
-    revalidatePath("/list/classes");
-    return { success: true, error: false };
-  } catch (err) {
-    console.log(err);
-    return { success: false, error: true };
+    return {
+      success: true,
+      error: false,
+    };
+  } catch (error) {
+    console.error("Error deleting class:", error);
+    return {
+      success: false,
+      error: true,
+    };
   }
-};
+}
 
 // TEACHER ACTIONS
 export const createTeacher = async (

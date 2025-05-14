@@ -79,9 +79,17 @@ const menuItems: MenuSection[] = [
       },
       {
         icon: "/class.png",
-        label: "Classes",
+        label: "Academic",
         href: "/list/classes",
         visible: ["admin", "teacher"],
+        subItems: [
+          { label: "Classes", href: "/list/classes" },
+          { label: "Departments", href: "/list/department" },
+          { label: "Grades", href: "/list/grade" },
+          { label: "Sections", href: "/list/sections" },
+          { label: "Curriculum", href: "/list/curriculum" },
+          { label: "Syllabus", href: "/list/syllabus" },
+        ],
       },
       {
         icon: "/lesson.png",
@@ -94,6 +102,10 @@ const menuItems: MenuSection[] = [
         label: "Exams",
         href: "/list/exams",
         visible: ["admin", "teacher", "student", "parent"],
+        subItems: [
+          { label: "All Exams", href: "/list/exams" },
+          { label: "Exam Types", href: "/list/exam-type" },
+        ],
       },
       {
         icon: "/assignment.png",
