@@ -1,5 +1,5 @@
 {
-  "name": "lama-dev-next-dashboard",
+  "name": "school-erp",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,6 +14,9 @@
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^5.19.1",
     "@types/react-big-calendar": "^1.8.9",
+    "bcryptjs": "^3.0.2",
+    "cuid": "^3.0.0",
+    "date-fns": "^4.1.0",
     "moment": "^2.30.1",
     "next": "14.2.5",
     "next-cloudinary": "^6.13.0",

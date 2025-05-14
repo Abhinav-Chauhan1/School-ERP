@@ -56,7 +56,7 @@ const TeacherForm = ({
     }
   }, [state, router, type, setOpen]);
 
-  const { subjects } = relatedData;
+  const { subjects, departments, academicYears } = relatedData || { subjects: [], departments: [], academicYears: [] };
 
   return (
     <form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -132,7 +132,7 @@ const TeacherForm = ({
         <InputField
           label="Birthday"
           name="birthday"
-          defaultValue={data?.birthday.toISOString().split("T")[0]}
+          defaultValue={data?.birthday?.toISOString().split("T")[0]}
           register={register}
           error={errors.birthday}
           type="date"
@@ -163,15 +163,58 @@ const TeacherForm = ({
             </p>
           )}
         </div>
+        
+        <div className="flex flex-col gap-2 w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Department</label>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            {...register("departmentId")}
+            defaultValue={data?.departmentId || ""}
+          >
+            <option value="">Select Department</option>
+            {departments?.map((department: { id: number; name: string }) => (
+              <option value={department.id} key={department.id}>
+                {department.name}
+              </option>
+            ))}
+          </select>
+          {errors.departmentId?.message && (
+            <p className="text-xs text-red-400">
+              {errors.departmentId.message.toString()}
+            </p>
+          )}
+        </div>
+        
+        <div className="flex flex-col gap-2 w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Academic Year</label>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            {...register("academicYearId")}
+            defaultValue={data?.academicYearId || ""}
+          >
+            <option value="">Select Academic Year</option>
+            {academicYears?.map((year: { id: number; name: string }) => (
+              <option value={year.id} key={year.id}>
+                {year.name}
+              </option>
+            ))}
+          </select>
+          {errors.academicYearId?.message && (
+            <p className="text-xs text-red-400">
+              {errors.academicYearId.message.toString()}
+            </p>
+          )}
+        </div>
+        
         <div className="flex flex-col gap-2 w-full md:w-1/4">
           <label className="text-xs text-gray-500">Subjects</label>
           <select
             multiple
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register("subjects")}
-            defaultValue={data?.subjects}
+            defaultValue={data?.subjects?.map((s: any) => s.id) || []}
           >
-            {subjects.map((subject: { id: number; name: string }) => (
+            {subjects?.map((subject: { id: number; name: string }) => (
               <option value={subject.id} key={subject.id}>
                 {subject.name}
               </option>

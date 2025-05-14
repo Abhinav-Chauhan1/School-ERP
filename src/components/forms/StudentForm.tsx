@@ -8,7 +8,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   studentSchema,
   StudentSchema,
-} from "@/app/(dashboard)/list/students/studentSchema";
+} from "@/lib/formValidationSchemas";
 import { useFormState } from "react-dom";
 import {
   createStudent,
@@ -33,11 +33,13 @@ const StudentForm = ({
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<StudentSchema>({
     resolver: zodResolver(studentSchema),
   });
 
   const [img, setImg] = useState<any>();
+  const selectedClassId = watch("classId");
 
   const [state, formAction] = useFormState(
     type === "create" ? createStudent : updateStudent,
@@ -50,7 +52,11 @@ const StudentForm = ({
   const onSubmit = handleSubmit((data) => {
     console.log("hello");
     console.log(data);
-    formAction({ ...data, img: img?.secure_url });
+    formAction({ 
+      ...data, 
+      img: img?.secure_url,
+      status: data.status || "ACTIVE"
+    });
   });
 
   const router = useRouter();
@@ -63,7 +69,11 @@ const StudentForm = ({
     }
   }, [state, router, type, setOpen]);
 
-  const { grades, classes } = relatedData;
+  const { grades, classes, sections } = relatedData;
+
+  // Filter sections based on selected class
+  const availableSections =
+    sections?.filter((section: { classId: number }) => section.classId === Number(selectedClassId)) || [];
 
   return (
     <form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -158,7 +168,7 @@ const StudentForm = ({
         <InputField
           label="Birthday"
           name="birthday"
-          defaultValue={data?.birthday.toISOString().split("T")[0]}
+          defaultValue={data?.birthday?.toISOString().split("T")[0]}
           register={register}
           error={errors.birthday}
           type="date"
@@ -193,6 +203,23 @@ const StudentForm = ({
           {errors.sex?.message && (
             <p className="text-xs text-red-400">
               {errors.sex.message.toString()}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col gap-2 w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Status</label>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            {...register("status")}
+            defaultValue={data?.status || "ACTIVE"}
+          >
+            <option value="ACTIVE">Active</option>
+            <option value="SUSPENDED">Suspended</option>
+            <option value="ARCHIVED">Archived</option>
+          </select>
+          {errors.status?.message && (
+            <p className="text-xs text-red-400">
+              {errors.status.message.toString()}
             </p>
           )}
         </div>
@@ -240,6 +267,31 @@ const StudentForm = ({
           {errors.classId?.message && (
             <p className="text-xs text-red-400">
               {errors.classId.message.toString()}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col gap-2 w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Section</label>
+          <select
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            {...register("sectionId")}
+            defaultValue={data?.sectionId || ""}
+          >
+            <option value="">No Section</option>
+            {availableSections.map(
+              (section: {
+                id: number;
+                name: string;
+              }) => (
+                <option value={section.id} key={section.id}>
+                  {section.name}
+                </option>
+              )
+            )}
+          </select>
+          {errors.sectionId?.message && (
+            <p className="text-xs text-red-400">
+              {errors.sectionId.message.toString()}
             </p>
           )}
         </div>

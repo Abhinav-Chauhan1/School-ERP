@@ -6,6 +6,9 @@ import {
   deleteStudent,
   deleteSubject,
   deleteTeacher,
+  deleteAcademicYear,
+  deleteTerm,
+  deleteParent,
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -21,8 +24,10 @@ const deleteActionMap = {
   teacher: deleteTeacher,
   student: deleteStudent,
   exam: deleteExam,
-// TODO: OTHER DELETE ACTIONS
-  parent: deleteSubject,
+  academicYear: deleteAcademicYear,
+  term: deleteTerm,
+  parent: deleteParent,
+  // TODO: OTHER DELETE ACTIONS
   lesson: deleteSubject,
   assignment: deleteSubject,
   result: deleteSubject,
@@ -42,6 +47,9 @@ const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
 const StudentForm = dynamic(() => import("./forms/StudentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const ParentForm = dynamic(() => import("@/app/(dashboard)/parent/ParentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -49,6 +57,12 @@ const ClassForm = dynamic(() => import("./forms/ClassForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const ExamForm = dynamic(() => import("./forms/ExamForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const AcademicYearForm = dynamic(() => import("./forms/AcademicYearForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const TermForm = dynamic(() => import("./forms/TermForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 // TODO: OTHER FORMS
@@ -93,6 +107,14 @@ const forms: {
       relatedData={relatedData}
     />
   ),
+  parent: (setOpen, type, data, relatedData) => (
+    <ParentForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
   exam: (setOpen, type, data, relatedData) => (
     <ExamForm
       type={type}
@@ -100,8 +122,23 @@ const forms: {
       setOpen={setOpen}
       relatedData={relatedData}
     />
-    // TODO OTHER LIST ITEMS
   ),
+  academicYear: (setOpen, type, data) => (
+    <AcademicYearForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+    />
+  ),
+  term: (setOpen, type, data, relatedData) => (
+    <TermForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  // TODO OTHER LIST ITEMS
 };
 
 const FormModal = ({

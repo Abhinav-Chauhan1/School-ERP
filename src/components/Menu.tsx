@@ -31,6 +31,18 @@ const menuItems = [
         visible: ["admin", "teacher"],
       },
       {
+        icon: "/calendar.png",
+        label: "Academic Years",
+        href: "/list/academic-years",
+        visible: ["admin"],
+      },
+      {
+        icon: "/calendar.png",
+        label: "Terms",
+        href: "/list/terms",
+        visible: ["admin"],
+      },
+      {
         icon: "/subject.png",
         label: "Subjects",
         href: "/list/subjects",

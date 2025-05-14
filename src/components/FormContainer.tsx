@@ -15,14 +15,17 @@ export type FormContainerProps = {
     | "result"
     | "attendance"
     | "event"
-    | "announcement";
+    | "announcement"
+    | "term"
+    | "academicYear";
   type: "create" | "update" | "delete";
   data?: any;
   id?: number | string;
+  relatedData?: any;
 };
 
-const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
-  let relatedData = {};
+const FormContainer = async ({ table, type, data, id, relatedData: passedRelatedData }: FormContainerProps) => {
+  let relatedData = passedRelatedData || {};
 
   const { userId, sessionClaims } = auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
@@ -49,17 +52,83 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
         const teacherSubjects = await prisma.subject.findMany({
           select: { id: true, name: true },
         });
-        relatedData = { subjects: teacherSubjects };
+
+        // Fetch departments for department dropdown
+        const departments = await prisma.department.findMany({
+          select: { id: true, name: true },
+        });
+
+        // Fetch academic years for academic year dropdown
+        const academicYears = await prisma.academicYear.findMany({
+          select: { id: true, name: true },
+          orderBy: { name: 'asc' },
+        });
+
+        relatedData = {
+          subjects: teacherSubjects,
+          departments: departments,
+          academicYears: academicYears,
+        };
         break;
       case "student":
         const studentGrades = await prisma.grade.findMany({
           select: { id: true, level: true },
         });
+
         const studentClasses = await prisma.class.findMany({
           include: { _count: { select: { students: true } } },
         });
-        relatedData = { classes: studentClasses, grades: studentGrades };
+
+        // Fetch sections for all classes
+        const studentSections = await prisma.section.findMany({
+          select: {
+            id: true,
+            name: true,
+            classId: true,
+          },
+        });
+
+        // Fetch parents for parent dropdown
+        const parents = await prisma.parent.findMany({
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+          },
+          where: {
+            status: "ACTIVE",
+          },
+        });
+
+        relatedData = {
+          classes: studentClasses,
+          grades: studentGrades,
+          sections: studentSections,
+          parents: parents,
+        };
         break;
+
+      case "parent":
+        // Fetch students for the parent association display
+        const availableStudents = await prisma.student.findMany({
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            parentId: true,
+          },
+          where: {
+            // Optionally only show unassigned students or those belonging to this parent
+            OR: [
+              { parentId: data?.id || '' },
+              { parentId: '' }
+            ]
+          },
+        });
+        
+        relatedData = { students: availableStudents };
+        break;
+
       case "exam":
         const examLessons = await prisma.lesson.findMany({
           where: {
@@ -68,6 +137,18 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
           select: { id: true, name: true },
         });
         relatedData = { lessons: examLessons };
+        break;
+      case "term":
+        if (!relatedData.academicYears) {
+          const academicYears = await prisma.academicYear.findMany({
+            select: { id: true, name: true },
+            orderBy: { name: 'asc' },
+          });
+          relatedData = { ...relatedData, academicYears };
+        }
+        break;
+      case "academicYear":
+        // No specific related data needed for academic year
         break;
 
       default:
