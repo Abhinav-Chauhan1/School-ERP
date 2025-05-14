@@ -805,7 +805,7 @@ export const createTerm = async (
       },
     });
 
-    revalidatePath("/list/terms");
+    // revalidatePath("/list/terms");
     return { success: true, error: false };
   } catch (err) {
     console.log(err);
