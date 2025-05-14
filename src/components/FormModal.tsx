@@ -17,7 +17,13 @@ import {
   deleteLesson,
   deleteExamType,
   deleteAssignment,
-  deleteResult, // Add import for deleteResult action
+  deleteResult,
+  deleteReportCard,
+  deleteAttendance,
+  deleteEvent,
+  deleteAnnouncement,
+  deleteFeeStructure,
+  deleteFeePayment, // Add import for deleteFeePayment action
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -44,10 +50,13 @@ const deleteActionMap = {
   lesson: deleteLesson,
   examType: deleteExamType,
   assignment: deleteAssignment,
-  result: deleteResult, // Update to use proper deleteResult action
-  attendance: deleteSubject,
-  event: deleteSubject,
-  announcement: deleteSubject,
+  result: deleteResult,
+  reportCard: deleteReportCard,
+  attendance: deleteAttendance,
+  event: deleteEvent,
+  announcement: deleteAnnouncement,
+  feeStructure: deleteFeeStructure,
+  feePayment: deleteFeePayment, // Update to use proper deleteFeePayment action
 };
 
 // USE LAZY LOADING
@@ -101,6 +110,24 @@ const AssignmentForm = dynamic(() => import("@/app/(dashboard)/list/assignments/
   loading: () => <h1>Loading...</h1>,
 });
 const ResultForm = dynamic(() => import("@/app/(dashboard)/list/results/ResultForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const ReportCardForm = dynamic(() => import("@/app/(dashboard)/list/reportcard/ReportCardForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const AttendanceForm = dynamic(() => import("@/app/(dashboard)/list/attendance/AttendanceForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const EventForm = dynamic(() => import("@/app/(dashboard)/list/events/EventForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const AnnouncementsForm = dynamic(() => import("@/app/(dashboard)/list/announcements/AnnouncementsForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const FeeStructureForm = dynamic(() => import("@/app/(dashboard)/list/fee-structure/FeeStructureForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const FeePaymentForm = dynamic(() => import("@/app/(dashboard)/list/fee-payment/FeePaymentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 // TODO: OTHER FORMS
@@ -243,6 +270,54 @@ const forms: {
   ),
   result: (setOpen, type, data, relatedData) => (
     <ResultForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  reportCard: (setOpen, type, data, relatedData) => (
+    <ReportCardForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  attendance: (setOpen, type, data, relatedData) => (
+    <AttendanceForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  event: (setOpen, type, data, relatedData) => (
+    <EventForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  announcement: (setOpen, type, data, relatedData) => (
+    <AnnouncementsForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  feeStructure: (setOpen, type, data, relatedData) => (
+    <FeeStructureForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  feePayment: (setOpen, type, data, relatedData) => (
+    <FeePaymentForm
       type={type}
       data={data}
       setOpen={setOpen}

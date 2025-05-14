@@ -23,7 +23,10 @@ export type FormContainerProps = {
     | "section"
     | "curriculum"
     | "syllabus"
-    | "examType"; // Added examType to the allowed table types
+    | "examType"
+    | "reportCard"
+    | "feeStructure"
+    | "feePayment"; // Add feePayment to the allowed table types
   type: "create" | "update" | "delete";
   data?: any;
   id?: number | string;
@@ -374,6 +377,195 @@ const FormContainer = async ({ table, type, data, id, relatedData: passedRelated
           exams: resultExams,
           assignments: resultAssignments,
           reportCards: resultReportCards
+        };
+        break;
+      case "reportCard":
+        // Fetch data needed for the report card form
+        const [reportCardStudents, reportCardTerms, reportCardResults] = await Promise.all([
+          prisma.student.findMany({
+            select: { 
+              id: true, 
+              name: true, 
+              surname: true 
+            },
+            orderBy: [
+              { surname: 'asc' },
+              { name: 'asc' }
+            ],
+          }),
+          prisma.term.findMany({
+            select: { 
+              id: true, 
+              name: true,
+              academicYear: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
+            },
+            orderBy: [
+              { academicYear: { name: 'desc' } },
+              { name: 'asc' }
+            ],
+          }),
+          prisma.result.findMany({
+            where: {
+              ...(data?.studentId ? { studentId: data.studentId } : {}),
+              reportCardId: null, // Only get results not assigned to any report card
+            },
+            include: {
+              exam: true,
+              assignment: true,
+              student: {
+                select: { name: true, surname: true }
+              }
+            },
+            orderBy: { id: 'desc' },
+          })
+        ]);
+        
+        relatedData = { 
+          students: reportCardStudents,
+          terms: reportCardTerms,
+          results: reportCardResults
+        };
+        break;
+      case "attendance":
+        // Fetch data needed for the attendance form
+        const [attendanceStudents, attendanceLessons] = await Promise.all([
+          prisma.student.findMany({
+            select: { 
+              id: true, 
+              name: true, 
+              surname: true 
+            },
+            orderBy: [
+              { surname: 'asc' },
+              { name: 'asc' }
+            ],
+          }),
+          prisma.lesson.findMany({
+            where: {
+              ...(role === "teacher" ? { teacherId: currentUserId! } : {}),
+            },
+            select: { 
+              id: true, 
+              name: true,
+              day: true,
+              subject: { select: { name: true } },
+              class: { select: { name: true } }
+            },
+            orderBy: { name: 'asc' },
+          })
+        ]);
+        
+        relatedData = { 
+          students: attendanceStudents,
+          lessons: attendanceLessons
+        };
+        break;
+      case "event":
+        // Fetch data needed for the event form
+        const [eventClasses, eventRooms] = await Promise.all([
+          prisma.class.findMany({
+            select: { 
+              id: true, 
+              name: true 
+            },
+            orderBy: { name: 'asc' },
+          }),
+          prisma.room.findMany({
+            select: { 
+              id: true, 
+              name: true,
+              type: true,
+              capacity: true
+            },
+            where: { 
+              available: true 
+            },
+            orderBy: { name: 'asc' },
+          })
+        ]);
+        
+        relatedData = { 
+          classes: eventClasses,
+          rooms: eventRooms
+        };
+        break;
+      case "announcement":
+        // Fetch data needed for the announcement form
+        const announcementClasses = await prisma.class.findMany({
+          select: { 
+            id: true, 
+            name: true 
+          },
+          orderBy: { name: 'asc' },
+        });
+        
+        relatedData = { 
+          classes: announcementClasses 
+        };
+        break;
+      case "feeStructure":
+        // Fetch data needed for the fee structure form
+        const [feeStructureGrades, feeStructureAcademicYears] = await Promise.all([
+          prisma.grade.findMany({
+            select: { 
+              id: true, 
+              level: true 
+            },
+            orderBy: { level: 'asc' },
+          }),
+          prisma.academicYear.findMany({
+            select: { 
+              id: true, 
+              name: true 
+            },
+            orderBy: { name: 'desc' },
+            take: 1, // Just to get the current academic year for reference
+          })
+        ]);
+        
+        relatedData = { 
+          grades: feeStructureGrades,
+          academicYears: feeStructureAcademicYears
+        };
+        break;
+      case "feePayment":
+        // Fetch data needed for the fee payment form
+        const [feePaymentStudents, feePaymentFeeStructures] = await Promise.all([
+          prisma.student.findMany({
+            select: { 
+              id: true, 
+              name: true, 
+              surname: true 
+            },
+            orderBy: [
+              { surname: 'asc' },
+              { name: 'asc' }
+            ],
+          }),
+          prisma.feeStructure.findMany({
+            select: { 
+              id: true, 
+              name: true,
+              amount: true,
+              feeType: true,
+              grade: { 
+                select: { 
+                  level: true 
+                } 
+              }
+            },
+            orderBy: { name: 'asc' },
+          })
+        ]);
+        
+        relatedData = { 
+          students: feePaymentStudents,
+          feeStructures: feePaymentFeeStructures
         };
         break;
       default:

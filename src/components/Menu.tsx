@@ -105,6 +105,8 @@ const menuItems: MenuSection[] = [
         subItems: [
           { label: "All Exams", href: "/list/exams" },
           { label: "Exam Types", href: "/list/exam-type" },
+          { label: "Exam Results", href: "/list/results" },
+          { label: "Report Cards", href: "/list/reportcard" },
         ],
       },
       {
@@ -124,6 +126,16 @@ const menuItems: MenuSection[] = [
         label: "Attendance",
         href: "/list/attendance",
         visible: ["admin", "teacher", "student", "parent"],
+      },
+      {
+        icon: "/calender.png",
+        label: "Fees",
+        href: "/list/fees",
+        visible: ["admin", "teacher", "student", "parent"],
+        subItems: [
+          { label: "Fee Structure", href: "/list/fee-structure" },
+          { label: "Fee Payments", href: "/list/fee-payments" },
+        ],
       },
       {
         icon: "/calendar.png",

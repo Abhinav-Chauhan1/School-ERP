@@ -4,18 +4,15 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Announcement, Class, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
 
-
-type AnnouncementList = Announcement & { class: Class };
 const AnnouncementListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  
   const { userId, sessionClaims } = auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const currentUserId = userId;
@@ -32,27 +29,28 @@ const AnnouncementListPage = async ({
     {
       header: "Date",
       accessor: "date",
+    },
+    {
+      header: "Description",
+      accessor: "description",
       className: "hidden md:table-cell",
     },
-    ...(role === "admin"
-      ? [
-          {
-            header: "Actions",
-            accessor: "action",
-          },
-        ]
-      : []),
+    {
+      header: "Actions",
+      accessor: "action",
+    },
   ];
   
-  const renderRow = (item: AnnouncementList) => (
+  const renderRow = (item: any) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
-      <td className="flex items-center gap-4 p-4">{item.title}</td>
-      <td>{item.class?.name || "-"}</td>
+      <td className="p-4">{item.title}</td>
+      <td>{item.class}</td>
+      <td>{item.date}</td>
       <td className="hidden md:table-cell">
-        {new Intl.DateTimeFormat("en-US").format(item.date)}
+        <div className="line-clamp-2">{item.description}</div>
       </td>
       <td>
         <div className="flex items-center gap-2">
@@ -66,11 +64,10 @@ const AnnouncementListPage = async ({
       </td>
     </tr>
   );
+
   const { page, ...queryParams } = searchParams;
 
   const p = page ? parseInt(page) : 1;
-
-  // URL PARAMS CONDITION
 
   const query: Prisma.AnnouncementWhereInput = {};
 
@@ -78,8 +75,15 @@ const AnnouncementListPage = async ({
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
+          case "classId":
+            query.classId = parseInt(value);
+            break;
           case "search":
-            query.title = { contains: value, mode: "insensitive" };
+            query.OR = [
+              { title: { contains: value, mode: "insensitive" } },
+              { description: { contains: value, mode: "insensitive" } },
+              { class: { name: { contains: value, mode: "insensitive" } } },
+            ];
             break;
           default:
             break;
@@ -89,21 +93,27 @@ const AnnouncementListPage = async ({
   }
 
   // ROLE CONDITIONS
+  if (role === "teacher") {
+    // Teachers can see all announcements and announcements for classes they teach
+    query.OR = [
+      { classId: null },
+      { class: { lessons: { some: { teacherId: currentUserId! } } } }
+    ];
+  } else if (role === "student") {
+    // Students can see all announcements and announcements for their class
+    query.OR = [
+      { classId: null },
+      { class: { students: { some: { id: currentUserId! } } } }
+    ];
+  } else if (role === "parent") {
+    // Parents can see all announcements and announcements for their children's classes
+    query.OR = [
+      { classId: null },
+      { class: { students: { some: { parentId: currentUserId! } } } }
+    ];
+  }
 
-  const roleConditions = {
-    teacher: { lessons: { some: { teacherId: currentUserId! } } },
-    student: { students: { some: { id: currentUserId! } } },
-    parent: { students: { some: { parentId: currentUserId! } } },
-  };
-
-  query.OR = [
-    { classId: null },
-    {
-      class: roleConditions[role as keyof typeof roleConditions] || {},
-    },
-  ];
-
-  const [data, count] = await prisma.$transaction([
+  const [announcementsData, count] = await prisma.$transaction([
     prisma.announcement.findMany({
       where: query,
       include: {
@@ -111,17 +121,38 @@ const AnnouncementListPage = async ({
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
+      orderBy: [
+        { date: 'desc' }
+      ],
     }),
     prisma.announcement.count({ where: query }),
   ]);
+
+  // Format date in a readable way
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Transform the data for display
+  const data = announcementsData.map(announcement => ({
+    id: announcement.id,
+    title: announcement.title,
+    description: announcement.description,
+    date: formatDate(announcement.date),
+    rawDate: announcement.date,
+    class: announcement.class?.name || "All Classes",
+    classId: announcement.classId,
+  }));
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">
-          All Announcements
-        </h1>
+        <h1 className="hidden md:block text-lg font-semibold">Announcements</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
