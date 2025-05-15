@@ -372,6 +372,7 @@ export const roomSchema = z.object({
   type: z.string(),
   location: z.string().optional(),
   available: z.boolean().default(true),
+  classes: z.array(z.coerce.number()).optional(), // Add this line for class associations
 });
 
 export type RoomSchema = z.infer<typeof roomSchema>;
@@ -406,14 +407,14 @@ export const notificationSchema = z.object({
 export type NotificationSchema = z.infer<typeof notificationSchema>;
 
 export const parentMeetingSchema = z.object({
-  id: z.coerce.number().optional(),
-  title: z.string().min(1, { message: "Title is required!" }),
-  description: z.string().optional(),
+  id: z.number().optional(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional().nullable(),
   meetingDate: z.coerce.date(),
-  status: z.string(),
-  parentId: z.string({ message: "Parent is required!" }),
-  teacherId: z.string({ message: "Teacher is required!" }),
-  feedback: z.string().optional(),
+  status: z.enum(["Scheduled", "Completed", "Cancelled"]),
+  parentId: z.string().min(1, "Parent is required"),
+  teacherId: z.string().min(1, "Teacher is required"),
+  feedback: z.string().optional().nullable(),
 });
 
 export type ParentMeetingSchema = z.infer<typeof parentMeetingSchema>;
@@ -434,27 +435,27 @@ export const documentSchema = z.object({
 export type DocumentSchema = z.infer<typeof documentSchema>;
 
 export const expenseSchema = z.object({
-  id: z.coerce.number().optional(),
-  title: z.string().min(1, { message: "Title is required!" }),
-  amount: z.coerce.number().min(0),
+  id: z.number().optional(),
+  title: z.string().min(1, "Title is required"),
+  amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   date: z.coerce.date(),
-  category: z.string(),
-  description: z.string().optional(),
-  receipt: z.string().optional(),
-  approvedBy: z.string().optional(),
+  category: z.string().min(1, "Category is required"),
+  description: z.string().optional().nullable(),
+  receipt: z.string().optional().nullable(),
+  approvedBy: z.string().optional().nullable(),
 });
 
 export type ExpenseSchema = z.infer<typeof expenseSchema>;
 
 export const budgetSchema = z.object({
   id: z.coerce.number().optional(),
-  title: z.string().min(1, { message: "Title is required!" }),
-  totalAmount: z.coerce.number().min(0),
+  title: z.string().min(1, "Title is required"),
+  totalAmount: z.coerce.number().min(0.01, "Total amount must be greater than 0"),
   allocatedDate: z.coerce.date(),
-  endDate: z.coerce.date().optional(),
-  description: z.string().optional(),
-  category: z.string(),
-  utilizedAmount: z.coerce.number().default(0),
+  endDate: z.coerce.date().optional().nullable(),
+  description: z.string().optional().nullable(),
+  category: z.string().min(1, "Category is required"),
+  utilizedAmount: z.coerce.number().min(0, "Utilized amount cannot be negative").default(0),
 });
 
 export type BudgetSchema = z.infer<typeof budgetSchema>;

@@ -24,7 +24,11 @@ import {
   deleteAnnouncement,
   deleteFeeStructure,
   deleteFeePayment,
-  deletePayroll, // Add import for deletePayroll action
+  deletePayroll,
+  deleteRoom,
+  deleteParentMeeting,
+  deleteExpense,
+  deleteBudget, // Add import for deleteBudget action
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -58,7 +62,11 @@ const deleteActionMap = {
   announcement: deleteAnnouncement,
   feeStructure: deleteFeeStructure,
   feePayment: deleteFeePayment,
-  payroll: deletePayroll, // Update to use proper deletePayroll action
+  payroll: deletePayroll,
+  room: deleteRoom,
+  parentMeeting: deleteParentMeeting,
+  expense: deleteExpense,
+  budget: deleteBudget, // Add budget to delete action map
 };
 
 // USE LAZY LOADING
@@ -133,6 +141,18 @@ const FeePaymentForm = dynamic(() => import("@/app/(dashboard)/list/fee-payment/
   loading: () => <h1>Loading...</h1>,
 });
 const PayrollForm = dynamic(() => import("@/app/(dashboard)/list/payroll/PayRollForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const RoomForm = dynamic(() => import("@/app/(dashboard)/list/room/RoomForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const ParentMeetingForm = dynamic(() => import("@/app/(dashboard)/list/parentmeeting/ParentMeetingForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const ExpenseForm = dynamic(() => import("@/app/(dashboard)/list/expense/ExpenseForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const BudgetForm = dynamic(() => import("@/app/(dashboard)/list/budget/BudgetForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 // TODO: OTHER FORMS
@@ -335,6 +355,36 @@ const forms: {
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
+    />
+  ),
+  room: (setOpen, type, data, relatedData) => (
+    <RoomForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  parentMeeting: (setOpen, type, data, relatedData) => (
+    <ParentMeetingForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+      relatedData={relatedData}
+    />
+  ),
+  expense: (setOpen, type, data) => (
+    <ExpenseForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
+    />
+  ),
+  budget: (setOpen, type, data) => (
+    <BudgetForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
     />
   ),
   // TODO OTHER LIST ITEMS

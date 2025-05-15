@@ -116,6 +116,15 @@ const menuItems: MenuSection[] = [
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
+        icon: "/assignment.png",
+        label: "Manage",
+        href: "/list/management",
+        visible: ["admin", "teacher"],
+        subItems: [
+          { label: "Room Management", href: "/list/room" },
+        ],
+      },
+      {
         icon: "/result.png",
         label: "Results",
         href: "/list/results",
@@ -136,7 +145,24 @@ const menuItems: MenuSection[] = [
           { label: "Fee Structure", href: "/list/fee-structure" },
           { label: "Fee Payments", href: "/list/fee-payments" },
           { label: "Payroll", href: "/list/payroll" },
+          { label: "Expanses", href: "/list/expense" },
         ],
+      },
+      {
+        icon: "/calendar.png",
+        label: "Metting",
+        href: "/list/meeting",
+        visible: ["admin", "teacher", "student", "parent"],
+        subItems: [
+          { label: "ParentTeacher Metting", href: "/list/parentmeeting" },
+
+        ],
+      },
+      {
+        icon: "/calendar.png",
+        label: "Transport",
+        href: "/list/transport",
+        visible: ["admin", "teacher", "student", "parent"],
       },
       {
         icon: "/calendar.png",

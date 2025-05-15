@@ -27,7 +27,11 @@ export type FormContainerProps = {
     | "reportCard"
     | "feeStructure"
     | "feePayment"
-    | "payroll"; // Add payroll to the allowed table types
+    | "payroll"
+    | "room"
+    | "parentMeeting"
+    | "expense"
+    | "budget"; // Add budget to the allowed table types
   type: "create" | "update" | "delete";
   data?: any;
   id?: number | string;
@@ -590,6 +594,68 @@ const FormContainer = async ({ table, type, data, id, relatedData: passedRelated
           teachers: payrollTeachers
         };
         break;
+      case "room":
+        // Fetch classes for room assignment
+        const roomClasses = await prisma.class.findMany({
+          select: { 
+            id: true, 
+            name: true 
+          },
+          orderBy: { name: 'asc' },
+        });
+        
+        relatedData = { 
+          classes: roomClasses 
+        };
+        break;
+
+      case "budget":
+        // No specific related data needed for budget
+        break;
+
+      case "expense":
+        // No specific related data needed for expenses
+        break;
+
+      case "parentMeeting":
+        // Fetch data needed for the parent meeting form
+        const [meetingParents, meetingTeachers] = await Promise.all([
+          prisma.parent.findMany({
+            select: { 
+              id: true, 
+              name: true, 
+              surname: true 
+            },
+            where: {
+              status: "ACTIVE"
+            },
+            orderBy: [
+              { surname: 'asc' },
+              { name: 'asc' }
+            ],
+          }),
+          prisma.teacher.findMany({
+            select: { 
+              id: true, 
+              name: true, 
+              surname: true 
+            },
+            where: {
+              status: "ACTIVE"
+            },
+            orderBy: [
+              { surname: 'asc' },
+              { name: 'asc' }
+            ],
+          })
+        ]);
+        
+        relatedData = { 
+          parents: meetingParents,
+          teachers: meetingTeachers
+        };
+        break;
+
       default:
         break;
     }
